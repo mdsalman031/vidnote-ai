@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+yt-dlp
+requests
+opencv-python
+python-dotenv              
+pydantic                   
+python-multipart   
+moviepy
+nltk
+youtube-transcript-api
