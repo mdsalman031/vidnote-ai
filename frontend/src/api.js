@@ -1,5 +1,7 @@
+const BASE_URL = 'https://vidnote-ai.onrender.com';
+
 export const generateSummary = async (url) => {
-  const response = await fetch('http://localhost:8000/generate-summary/', {
+  const response = await fetch(`${BASE_URL}/generate-summary/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -20,7 +22,7 @@ export const generateSummary = async (url) => {
 };
 
 export const generateQuiz = async (url) => {
-  const response = await fetch('http://localhost:8000/generate-quiz/', {
+  const response = await fetch(`${BASE_URL}/generate-quiz/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
