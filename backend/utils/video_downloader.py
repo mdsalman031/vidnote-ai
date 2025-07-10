@@ -13,7 +13,11 @@ def download_video(youtube_url: str, output_dir='downloads/') -> str:
         'merge_output_format': 'mp4'
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([youtube_url])
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([youtube_url])
+        return video_path
 
-    return video_path
+    except Exception as e:
+        print(f"[DOWNLOAD ERROR] {e}")
+        raise Exception("❌ Failed to download the YouTube video. It may be unavailable, private, restricted, or rate-limited.")
