@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-multipart
+aiofiles
+requests
+beautifulsoup4
+python-dotenv
+yt-dlp
+opencv-python
+numpy
+youtube-transcript-api
+bleach

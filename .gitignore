@@ -4,10 +4,20 @@ frontend/dist/
 
 # Python
 backend/venv/
-__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
 
 # Env
+.env
+.env.*
 *.env
 
 # VSCode
 .vscode/
+
+# Mac / Linux OS
+.DS_Store
+
+# Windows OS
+Thumbs.db
