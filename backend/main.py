@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, HttpUrl  
 from utils.summarizer import generate_structured_notes, generate_quiz_from_transcript
-from utils.transcriber import fetch_youtube_transcript
+from utils.transcriber import transcribe_audio
 from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
@@ -19,13 +19,13 @@ app.add_middleware(
 )
 
 class VideoURL(BaseModel):
-    url: str
+    url: HttpUrl
 
 @app.post("/generate-summary/")
 async def generate_summary(data: VideoURL):
     try:
         video_id = str(uuid.uuid4())
-        transcript = fetch_youtube_transcript(data.url)
+        transcript = transcribe_audio(data.url)
         if not transcript:
             raise Exception("Transcript could not be generated")
 
@@ -44,7 +44,7 @@ async def generate_summary(data: VideoURL):
 @app.post("/generate-quiz/")
 async def generate_quiz(data: VideoURL):
     try:
-        transcript = fetch_youtube_transcript(data.url)
+        transcript = transcribe_audio(data.url)
         if not transcript:
             raise Exception("Transcript is empty")
 

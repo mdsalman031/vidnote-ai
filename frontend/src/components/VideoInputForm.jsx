@@ -5,11 +5,15 @@ const VideoInputForm = ({ onSubmit }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!url) return;
+  e.preventDefault();
+  if (!url.trim()) {
+    alert("Please enter a valid YouTube URL");
+    return;
+  }
 
-    onSubmit(url);
-  };
+  onSubmit(url.trim()); // trim removes accidental whitespace
+};
+
 
   return (
     <form onSubmit={handleSubmit} className="relative">
