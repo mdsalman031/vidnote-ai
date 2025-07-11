@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import VideoInputForm from '../components/VideoInputForm';
 import Loader from '../components/Loader';
 import ParticlesBackground from '../components/ParticlesBackground';
@@ -8,28 +8,24 @@ import printJS from 'print-js';
 
 const Home = () => {
   const [notes, setNotes] = useState('');
-  const [summaries, setSummaries] = useState([]);
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [videoId, setVideoId] = useState('');
   const [activeTab, setActiveTab] = useState('notes');
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [loadedImages, setLoadedImages] = useState(0);
 
-  const handleGenerateSummary = async (url) => {
+  const handleGenerateSummary = async (youtubeURL) => {
     setLoading(true);
     setNotes('');
-    setSummaries([]);
     setQuizQuestions([]);
     setIsCollapsed(false);
-    setLoadedImages(0);
 
     try {
-      const result = await generateSummary(url);
+      const result = await generateSummary(youtubeURL);
       setNotes(result.notes);
       setVideoId(result.video_id);
 
-      const quiz = await generateQuiz(url);
+      const quiz = await generateQuiz(youtubeURL);
       setQuizQuestions(quiz);
     } catch (error) {
       alert('Error generating summary or quiz');
@@ -38,50 +34,30 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    if (!videoId) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`http://localhost:8000/get-frames/${videoId}`);
-        const data = await res.json();
-        if (data && data.frames?.length > 0) {
-          setSummaries(data.frames);
-          clearInterval(interval);
-        }
-      } catch (err) {
-        console.log('Polling for frames...');
-      }
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [videoId]);
-
   const handleDownloadPDF = () => {
-  printJS({
-    printable: 'structured-notes',
-    type: 'html',
-    scanStyles: false,
-    targetStyles: ['*'],
-    css: '', // optionally inject your custom CSS
-  });
-};
+    printJS({
+      printable: 'structured-notes',
+      type: 'html',
+      scanStyles: false,
+      targetStyles: ['*'],
+    });
+  };
 
   const handleDownloadMarkdown = () => {
-  const element = document.getElementById('structured-notes');
-  if (!element) return alert('No notes to export');
+    const element = document.getElementById('structured-notes');
+    if (!element) return alert('No notes to export');
 
-  const plainText = element.innerText; // Get raw readable content
-  const blob = new Blob([plainText], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
+    const plainText = element.innerText;
+    const blob = new Blob([plainText], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'VidNote_Summary.md';
-  a.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'VidNote_Summary.md';
+    a.click();
 
-  URL.revokeObjectURL(url);
-};
+    URL.revokeObjectURL(url);
+  };
 
   const handleManualCleanup = async () => {
     try {
@@ -120,7 +96,7 @@ const Home = () => {
             Transform Videos into <span className="text-blue-400">Structured Notes</span>
           </h2>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Extract transcripts, generate summaries, and capture key frames from any YouTube video with AI-powered precision
+            Extract transcripts, generate summaries, and quiz questions from any video with AI-powered precision.
           </p>
         </div>
 
@@ -137,16 +113,28 @@ const Home = () => {
             )}
           </div>
 
-          {(notes || summaries.length > 0 || quizQuestions.length > 0) && (
+          {(notes || quizQuestions.length > 0) && (
             <div className="border-t border-gray-700/50">
               <div className="flex border-b border-gray-700/50 justify-between items-center px-4">
                 <div>
-                  <button className={`px-6 py-4 font-medium ${activeTab === 'notes' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`} onClick={() => setActiveTab('notes')}>Notes</button>
-                  <button className={`px-6 py-4 font-medium ${activeTab === 'frames' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`} onClick={() => setActiveTab('frames')}>Key Frames ({summaries.length})</button>
-                  <button className={`px-6 py-4 font-medium ${activeTab === 'quiz' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`} onClick={() => setActiveTab('quiz')}>Quizzes</button>
+                  <button
+                    className={`px-6 py-4 font-medium ${activeTab === 'notes' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+                    onClick={() => setActiveTab('notes')}
+                  >
+                    Notes
+                  </button>
+                  <button
+                    className={`px-6 py-4 font-medium ${activeTab === 'quiz' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+                    onClick={() => setActiveTab('quiz')}
+                  >
+                    Quizzes
+                  </button>
                 </div>
                 {videoId && (
-                  <button onClick={handleManualCleanup} className="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full transition duration-300">
+                  <button
+                    onClick={handleManualCleanup}
+                    className="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full transition duration-300"
+                  >
                     Cleanup Storage
                   </button>
                 )}
@@ -162,7 +150,11 @@ const Home = () => {
                       <button onClick={handleDownloadPDF} className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 px-4 py-2 rounded-lg transition-all duration-300">Export as PDF</button>
                       <button onClick={handleDownloadMarkdown} className="bg-gradient-to-r from-purple-600 to-fuchsia-700 hover:from-purple-700 hover:to-fuchsia-800 px-4 py-2 rounded-lg transition-all duration-300">Export as Markdown</button>
                     </div>
-                    <div id="structured-notes" className={`prose prose-invert max-w-none bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 overflow-hidden transition-all duration-500 ${isCollapsed ? 'max-h-40 overflow-y-hidden' : ''}`} dangerouslySetInnerHTML={{ __html: notes }} />
+                    <div
+                      id="structured-notes"
+                      className={`prose prose-invert max-w-none bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 overflow-hidden transition-all duration-500 ${isCollapsed ? 'max-h-40 overflow-y-hidden' : ''}`}
+                      dangerouslySetInnerHTML={{ __html: notes }}
+                    />
                     {isCollapsed && (
                       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-900 to-transparent flex items-end justify-center pb-4">
                         <button onClick={() => setIsCollapsed(false)} className="text-blue-400 hover:text-blue-300 flex items-center">
@@ -173,33 +165,6 @@ const Home = () => {
                         </button>
                       </div>
                     )}
-                  </div>
-                )}
-
-                {activeTab === 'frames' && summaries.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {summaries.map((frameUrl, index) => (
-                      <img
-                        key={index}
-                        src={`http://localhost:8000${frameUrl}`}
-                        alt={`Frame ${index}`}
-                        className="rounded-lg shadow-md w-full h-auto"
-                        onLoad={() => {
-                          setLoadedImages((prev) => {
-                            const updated = prev + 1;
-                            if (updated === summaries.length) {
-                              fetch(`http://localhost:8000/cleanup/${videoId}`, {
-                                method: 'POST',
-                              })
-                                .then((res) => res.json())
-                                .then((msg) => console.log('Cleanup successful:', msg))
-                                .catch((err) => console.error('Cleanup failed:', err));
-                            }
-                            return updated;
-                          });
-                        }}
-                      />
-                    ))}
                   </div>
                 )}
 

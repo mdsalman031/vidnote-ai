@@ -10,14 +10,14 @@ def extract_video_id(url: str) -> str:
         raise ValueError("Invalid YouTube URL format")
     return match.group(1)
 
-def fetch_youtube_transcript(url: str) -> str:
+def transcribe_audio(url: str) -> str:
     """
     Get the transcript text from a YouTube video using YouTubeTranscriptApi.
     """
     video_id = extract_video_id(url)
 
     try:
-        # Try English first
+        # Try English and Hindi
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=["en", "hi"])
         full_text = " ".join([entry["text"] for entry in transcript_list])
         return full_text

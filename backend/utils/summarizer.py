@@ -1,14 +1,12 @@
 import os
 import re
 import json
-import time
 import requests
 from typing import List
 from dotenv import load_dotenv
 import bleach
 from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
-from utils.frame_extractor import extract_key_frames
 
 load_dotenv()
 TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
@@ -90,29 +88,6 @@ def fetch_youtube_transcript(video_url: str) -> str:
     except Exception as e:
         print(f"[ERROR] Transcript fetch failed: {e}")
         return ""
-
-def queue_frame_extraction(video_path: str, video_id: str):
-    try:
-        frames = extract_key_frames(video_path)
-        new_paths = []
-
-        for path in frames:
-            base = os.path.basename(path)
-            new_name = f"{video_id}_{base}"
-            new_path = os.path.join(os.path.dirname(path), new_name)
-            os.rename(path, new_path)
-            new_paths.append(new_path)
-
-        # # ✅ Delay cleanup by 10 seconds to let frontend fetch frames
-        # time.sleep(10)
-
-        # # ✅ Cleanup imported locally to avoid circular import
-        # from main import cleanup_files
-        # cleanup_files(video_path, video_id)
-
-        return new_paths
-    except Exception as e:
-        print(f"[ERROR] Frame extraction or cleanup failed: {e}")
 
 def generate_quiz_from_transcript(transcript: str) -> List[dict]:
     cleaned = clean_text(transcript)
