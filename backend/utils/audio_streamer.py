@@ -20,7 +20,6 @@ def stream_audio_to_wav(youtube_url: str, output_dir='downloads/', duration=60) 
     temp_audio_file = os.path.join(output_dir, f"{uuid.uuid4().hex}.m4a")
     output_wav_file = os.path.join(output_dir, f"{uuid.uuid4().hex}.wav")
 
-    # Download the audio using yt-dlp
     ydl_opts = {
         'format': 'bestaudio[ext=m4a]/bestaudio/best',
         'outtmpl': temp_audio_file,
@@ -31,7 +30,6 @@ def stream_audio_to_wav(youtube_url: str, output_dir='downloads/', duration=60) 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([youtube_url])
 
-    # Convert to WAV using FFmpeg
     command = [
         'ffmpeg',
         '-y',
@@ -51,7 +49,6 @@ def stream_audio_to_wav(youtube_url: str, output_dir='downloads/', duration=60) 
 
     print(f"[INFO] Created audio file: {output_wav_file}")
 
-    # Optionally remove temp m4a file
     os.remove(temp_audio_file)
 
     return output_wav_file
